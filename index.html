@@ -1423,26 +1423,37 @@ async function safeJson(res) {
 }
 
 async function apiFetch(url, opts = {}) {
-  const res = await fetch(url, opts);
-  const data = await safeJson(res);
-  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-  return data;
+  // Timeout 8 detik — cegah fetch hang selamanya (Vercel cold start dll)
+  const ctrl = new AbortController();
+  const tid = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(url, { signal: ctrl.signal, ...opts });
+    const data = await safeJson(res);
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  } catch(e) {
+    if (e.name === 'AbortError') throw new Error('Request timeout');
+    throw e;
+  } finally {
+    clearTimeout(tid);
+  }
 }
 
 /* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
-(async function init() {
+(function init() {
   initTheme();
   initSidebar();
-  await loadConfig();
+  initRouter();
+  renderFAQ();
+  renderContact();
+  // Semua API calls jalan PARALLEL — tidak ada yang blocking
+  loadConfig();
   loadProducts();
   loadLeaderboard();
   loadTestimonials();
-  renderFAQ();
-  renderContact();
   loadBroadcast();
-  initRouter();
 })();
 
 async function loadConfig() {
@@ -2722,19 +2733,15 @@ function selectStockDur(dur, label) {
 
 
 // ── Splash ──────────────────────────────────────
-// Fix: jangan hanya tunggu window.load (bisa stuck kalau font/resource lambat).
-// Dismiss setelah animasi selesai (~1500ms) ATAU setelah window.load, mana lebih cepat.
+// Fix: splash hilang setelah max 1500ms, tidak tunggu window.load
 (function() {
-  let _splashDone = false;
+  let _done = false;
   function hideSplash() {
-    if (_splashDone) return;
-    _splashDone = true;
+    if (_done) return; _done = true;
     const s = document.getElementById('splash');
     if (s) { s.classList.add('hide'); setTimeout(() => { if (s.parentNode) s.remove(); }, 520); }
   }
-  // Hard max: selalu hilang setelah 1500ms (cukup untuk semua animasi splash)
-  setTimeout(hideSplash, 1500);
-  // Juga dismiss setelah load event (300ms delay biar transisi halus)
+  setTimeout(hideSplash, 1500); // hard max — selalu hilang
   window.addEventListener('load', function() { setTimeout(hideSplash, 300); });
 })();
 
