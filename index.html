@@ -2722,12 +2722,21 @@ function selectStockDur(dur, label) {
 
 
 // ── Splash ──────────────────────────────────────
-window.addEventListener('load', () => {
-  setTimeout(() => {
+// Fix: jangan hanya tunggu window.load (bisa stuck kalau font/resource lambat).
+// Dismiss setelah animasi selesai (~1500ms) ATAU setelah window.load, mana lebih cepat.
+(function() {
+  let _splashDone = false;
+  function hideSplash() {
+    if (_splashDone) return;
+    _splashDone = true;
     const s = document.getElementById('splash');
-    if (s) { s.classList.add('hide'); setTimeout(() => s.remove(), 520); }
-  }, 1000);
-});
+    if (s) { s.classList.add('hide'); setTimeout(() => { if (s.parentNode) s.remove(); }, 520); }
+  }
+  // Hard max: selalu hilang setelah 1500ms (cukup untuk semua animasi splash)
+  setTimeout(hideSplash, 1500);
+  // Juga dismiss setelah load event (300ms delay biar transisi halus)
+  window.addEventListener('load', function() { setTimeout(hideSplash, 300); });
+})();
 
 // ── Top progress bar ────────────────────────────
 const NP = {
