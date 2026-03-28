@@ -621,24 +621,7 @@ select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+x
 @media(max-width:360px){.pgrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
-/* ═══════════════════════════════════════════
-   SPLASH SCREEN
-═══════════════════════════════════════════ */
-#splash{position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:22px;transition:opacity .5s var(--ease),transform .5s var(--ease)}
-#splash.hide{opacity:0;pointer-events:none;transform:translateY(-8px)}
-.splash-logo{width:52px;height:52px;animation:splashSpin 1.1s var(--easep) forwards}
-@keyframes splashSpin{0%{opacity:0;transform:scale(.5) rotate(-90deg)}60%{transform:scale(1.12) rotate(8deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
-.splash-name{font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:800;color:var(--t1);
-  letter-spacing:-.3px;animation:splashFade .5s var(--easeo) .35s both}
-.splash-name span{opacity:.35}
-@keyframes splashFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.splash-bar{width:120px;height:2px;background:var(--bg3);border-radius:2px;overflow:hidden;
-  animation:splashFade .4s var(--easeo) .5s both}
-.splash-bar-fill{height:100%;background:var(--t1);border-radius:2px;animation:splashLoad .9s var(--ease) .5s both}
-@keyframes splashLoad{from{width:0}to{width:100%}}
-.splash-sub{font-size:10px;font-family:'DM Mono',monospace;color:var(--t3);letter-spacing:.12em;
-  text-transform:uppercase;animation:splashFade .4s var(--easeo) .6s both}
+
 
 /* ═══════════════════════════════════════════
    TOP PROGRESS BAR
@@ -832,12 +815,7 @@ select.inp{appearance:none;cursor:pointer;background-image:url("data:image/svg+x
 <body>
 
 <!-- SPLASH SCREEN -->
-<div id="splash">
-  <img class="splash-logo" src="/logo.svg" alt="" onerror="this.style.display='none'">
-  <div class="splash-name">SEONS<span>PREMS</span></div>
-  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
-  <div class="splash-sub">Premium Digital Store</div>
-</div>
+
 
 <!-- TOP PROGRESS BAR -->
 <div id="nprogress"><div id="nprogress-bar" style="width:0%"></div></div>
@@ -2227,10 +2205,10 @@ async function openAdmLog() {
 async function loadAdmLog() {
   const el = document.getElementById('adm-log-list');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--t3);font-size:11px;font-family:'DM Mono',monospace"><span class="ld dk"></span></div>';
+  el.innerHTML = '<div style="text-align:center;padding:16px;color:var(--t3);font-size:11px;font-family:\'DM Mono\',monospace"><span class="ld dk"></span></div>';
   try {
     const logs = await apiFetch('/api/admin?action=logs&limit=100', { headers: { 'x-admin-token': S.adminToken } });
-    if (!logs.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:11px;font-family:'DM Mono',monospace">Belum ada log</div>'; return; }
+    if (!logs.length) { el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--t3);font-size:11px;font-family:\'DM Mono\',monospace">Belum ada log</div>'; return; }
     const actionColors = { LOGIN:'var(--green)', LOGOUT:'var(--t3)', ADD_PRODUCT:'var(--blue)', EDIT_PRODUCT:'var(--yellow)', DELETE_PRODUCT:'var(--red)', ADD_ADMIN:'var(--purple)', REMOVE_ADMIN:'var(--red)', UPDATE_ADMIN:'var(--yellow)' };
     el.innerHTML = logs.map(l => {
       const color  = actionColors[l.action] || 'var(--t2)';
@@ -2732,18 +2710,7 @@ function selectStockDur(dur, label) {
 
 
 
-// ── Splash ──────────────────────────────────────
-// Fix: splash hilang setelah max 1500ms, tidak tunggu window.load
-(function() {
-  let _done = false;
-  function hideSplash() {
-    if (_done) return; _done = true;
-    const s = document.getElementById('splash');
-    if (s) { s.classList.add('hide'); setTimeout(() => { if (s.parentNode) s.remove(); }, 520); }
-  }
-  setTimeout(hideSplash, 1500); // hard max — selalu hilang
-  window.addEventListener('load', function() { setTimeout(hideSplash, 300); });
-})();
+
 
 // ── Top progress bar ────────────────────────────
 const NP = {
